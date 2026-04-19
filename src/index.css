@@ -68,3 +68,65 @@ body {
 .axis path {
   stroke: var(--border);
 }
+
+/* ─── Table row interaction states ────────────────────────────────────────── */
+/* Replaces onMouseEnter/onMouseLeave JS mutations. Selected state is still   */
+/* applied via inline style (higher specificity) when React state demands it.  */
+
+tr.row-position {
+  background: transparent;
+  transition: background 0.1s;
+}
+tr.row-position:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+tr.row-position.is-expanded,
+tr.row-position.is-expanded:hover {
+  background: var(--surface);
+}
+tr.row-position:active {
+  opacity: 0.8;
+}
+
+tr.row-trade {
+  transition: background 0.1s;
+}
+tr.row-trade[data-side='BUY'] {
+  background: rgba(34, 197, 94, 0.04);
+}
+tr.row-trade[data-side='SELL'] {
+  background: rgba(239, 68, 68, 0.04);
+}
+tr.row-trade:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+tr.row-trade[data-selected='true'] {
+  background: rgba(196, 127, 0, 0.08);
+}
+tr.row-trade[data-selected='true']:hover {
+  background: rgba(196, 127, 0, 0.08);
+}
+tr.row-trade:active {
+  opacity: 0.8;
+}
+
+/* ─── Mobile / narrow-screen helpers ──────────────────────────────────────── */
+
+/* Hide on screens narrower than 480px */
+.hide-mobile {
+  display: block;
+}
+
+/* Mobile banner shown only on small screens */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  .mobile-only {
+    display: flex !important;
+  }
+}

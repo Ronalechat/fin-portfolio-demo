@@ -1,1 +1,1 @@
-export { PortfolioChart } from './PortfolioChart'
+export { PortfolioChart, type SelectedTrade } from './PortfolioChart'
