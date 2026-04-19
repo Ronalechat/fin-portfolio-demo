@@ -111,7 +111,7 @@ function generateTrades(
 // Ticker assignment uses weighted modulo so sector distribution is uneven
 // (more positions in large-cap, fewer in biotech — reflects a real fund tilt).
 
-const POSITION_COUNT = 1_500
+const POSITION_COUNT = 500
 
 export const portfolioData: Position[] = Array.from(
   { length: POSITION_COUNT },
