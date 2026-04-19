@@ -105,12 +105,13 @@ function generateTrades(
 }
 
 // ─── Portfolio generation ────────────────────────────────────────────────────
-// 5,000 positions across 30 tickers — enough to make the virtualiser
-// demonstrably necessary while keeping module-load time under ~100ms.
+// 1,500 positions across 30 tickers — large enough to make the virtualiser
+// clearly necessary (~15 rows rendered vs 1,500 in the model), small enough
+// for sub-50ms load and smooth brush interactions.
 // Ticker assignment uses weighted modulo so sector distribution is uneven
 // (more positions in large-cap, fewer in biotech — reflects a real fund tilt).
 
-const POSITION_COUNT = 5_000
+const POSITION_COUNT = 1_500
 
 export const portfolioData: Position[] = Array.from(
   { length: POSITION_COUNT },

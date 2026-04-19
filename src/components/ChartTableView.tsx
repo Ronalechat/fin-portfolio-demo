@@ -19,11 +19,14 @@ export function ChartTableView() {
   const filteredIds = useMemo<Set<number> | null>(() => {
     if (!dateRange) return null
     const [start, end] = dateRange
+    // ISO date strings (YYYY-MM-DD) sort lexicographically — no Date objects needed.
+    // Avoids up to N×trades `new Date()` constructions on every brush drag event.
+    const startStr = start.toISOString().slice(0, 10)
+    const endStr   = end.toISOString().slice(0, 10)
     const ids = new Set<number>()
     for (const pos of portfolioData) {
       for (const trade of pos.trades) {
-        const d = new Date(trade.date)
-        if (d >= start && d <= end) {
+        if (trade.date >= startStr && trade.date <= endStr) {
           ids.add(pos.id)
           break
         }

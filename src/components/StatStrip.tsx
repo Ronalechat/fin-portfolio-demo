@@ -49,11 +49,14 @@ export function StatStrip({ filteredIds, dateRange, globalFilter }: Props) {
     let buyVol = 0
     let sellVol = 0
 
+    // ISO string comparison avoids new Date() per trade — lexicographic = chronological
+    const startStr = dateRange ? dateRange[0].toISOString().slice(0, 10) : null
+    const endStr   = dateRange ? dateRange[1].toISOString().slice(0, 10) : null
+
     for (const pos of filteredPositions) {
       for (const trade of pos.trades) {
-        if (!dateRange) continue
-        const d = new Date(trade.date)
-        if (d >= dateRange[0] && d <= dateRange[1]) {
+        if (!startStr || !endStr) continue
+        if (trade.date >= startStr && trade.date <= endStr) {
           const v = trade.price * trade.quantity
           volume += v
           if (trade.side === 'BUY') buyVol += v
