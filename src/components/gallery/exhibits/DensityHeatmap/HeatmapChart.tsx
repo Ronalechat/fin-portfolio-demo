@@ -104,6 +104,13 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartPro
   }, [innerH])
 
   // ── Pointer events (mouse + touch) ──────────────────────────────────────
+  // setPointerCapture routes all subsequent pointer events to this element for
+  // the life of the gesture, which suppresses the browser's scroll heuristic
+  // even on browsers that don't honour touch-action on SVG children.
+  const handlePointerDown = useCallback((e: React.PointerEvent<SVGRectElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }, [])
+
   const handlePointerMove = useCallback((e: React.PointerEvent<SVGRectElement>) => {
     const svgEl    = svgRef.current
     const container = containerRef.current
@@ -255,6 +262,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartPro
             fill="transparent"
             aria-describedby="heatmap-tooltip"
             className={styles.overlayRect}
+            onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerLeave={handlePointerLeave}
           />
