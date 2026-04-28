@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { ChartTableView } from '../components/ChartTableView'
+import { MobilePositionList } from '../components/DataTable/MobilePositionList'
 
-function LoadingScreen({ onDone }: { onDone: () => void }) {
+const LoadingScreen = ({ onDone }: { onDone: () => void }) => {
   useEffect(() => {
     const t = setTimeout(onDone, 1400)
     return () => clearTimeout(t)
@@ -19,7 +20,6 @@ function LoadingScreen({ onDone }: { onDone: () => void }) {
       gap: 20,
       zIndex: 100,
     }}>
-      {/* Animated bar chart icon */}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 28 }}>
         {[0.45, 0.75, 1, 0.6, 0.85].map((h, i) => (
           <div
@@ -56,46 +56,33 @@ function LoadingScreen({ onDone }: { onDone: () => void }) {
   )
 }
 
-export function WorkbenchPage() {
+export const WorkbenchPage = () => {
   const [ready, setReady] = useState(false)
 
   return (
     <>
-      {/* Mobile notice — shown below 768px */}
+      {/* Mobile: simplified position list */}
       <div
         className="mobile-only"
-        style={{
-          flex: 1,
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '48px 24px',
-          textAlign: 'center',
-          gap: 16,
-        }}
+        style={{ flex: 1, flexDirection: 'column' }}
       >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="14" rx="2" stroke="var(--accent)" strokeWidth="1.5" />
-          <line x1="8" y1="21" x2="16" y2="21" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="12" y1="18" x2="12" y2="21" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
-          Best viewed on desktop
-        </div>
-        <div style={{
-          fontSize: 11, color: 'var(--text-2)', lineHeight: 1.6, maxWidth: 280,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-        }}>
-          The Workbench combines a D3 chart and a virtualised table across a wide layout.
-          Open on a laptop for the full experience.
-        </div>
+        <MobilePositionList />
       </div>
 
-      {/* Desktop layout */}
-      <div className="hide-mobile" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, position: 'relative' }}>
+      {/* Desktop: full chart + table workbench */}
+      <div
+        className="hide-mobile"
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, position: 'relative' }}
+      >
         {!ready && <LoadingScreen onDone={() => setReady(true)} />}
-        {/* Mount eagerly so data is ready when loading screen fades */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, opacity: ready ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          opacity: ready ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+        }}>
           <ChartTableView />
         </div>
       </div>

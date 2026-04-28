@@ -1,0 +1,85 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.filterWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filterIcon {
+  position: absolute;
+  left: 8px;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.filterInput {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-1);
+  font-family: ui-sans-serif, system-ui;
+  font-size: 11px;
+  padding: 4px 8px 4px 26px;
+  width: 160px;
+  outline: none;
+  letter-spacing: 0.02em;
+}
+
+.filterInput:focus {
+  border-color: var(--accent);
+}
+
+.pinnedBadge {
+  font-size: 10px;
+  color: var(--accent);
+  font-family: ui-sans-serif, system-ui;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pinnedDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.posCount {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-2);
+  font-family: ui-sans-serif, system-ui;
+  letter-spacing: 0.04em;
+}
+
+.tableArea {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* width is dynamic (0 or 284px) so it stays inline */
+.detailSlider {
+  flex-shrink: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--border);
+  transition: width 0.2s ease;
+}
