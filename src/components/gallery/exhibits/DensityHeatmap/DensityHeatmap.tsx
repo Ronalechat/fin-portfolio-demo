@@ -8,7 +8,7 @@ import styles from './heatmap.module.css'
 
 const TAB_ITEMS = EXAMPLES.map(e => ({ id: e.id, label: e.label }))
 
-export const DensityHeatmap = (): JSX.Element => {
+export const DensityHeatmap = () => {
   const [activeId, setActiveId] = useState<string>(DEFAULT_EXAMPLE_ID)
 
   // EXAMPLES is a module-level constant so .find() returns a stable reference

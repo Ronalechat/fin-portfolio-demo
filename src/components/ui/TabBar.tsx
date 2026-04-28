@@ -16,7 +16,7 @@ interface TabBarProps {
   className?: string
 }
 
-export const TabBar = ({ items, activeId, onSelect, className }: TabBarProps): JSX.Element => {
+export const TabBar = ({ items, activeId, onSelect, className }: TabBarProps) => {
   const containerClass = className
     ? `${styles.tabBar} ${className}`
     : styles.tabBar

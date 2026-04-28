@@ -15,7 +15,7 @@ interface HeatmapChartProps {
   rows: number
 }
 
-export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartProps): JSX.Element => {
+export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartProps) => {
   const svgRef          = useRef<SVGSVGElement>(null)
   const containerRef    = useRef<HTMLDivElement>(null)
   const cellGRef        = useRef<SVGGElement>(null)
