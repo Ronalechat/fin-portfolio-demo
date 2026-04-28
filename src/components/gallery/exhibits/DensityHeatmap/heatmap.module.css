@@ -3,6 +3,10 @@
   width: 100%;
   height: 100%;
   position: relative;
+  /* Prevent the browser from claiming vertical swipes as page-scroll while a
+     finger is anywhere inside the heatmap. Applied to the HTML div (not the
+     SVG rect) so it takes effect in all browsers including Safari/WebKit. */
+  touch-action: none;
 }
 
 /* ── Flex column: tab bar on top, chart filling the rest ── */
