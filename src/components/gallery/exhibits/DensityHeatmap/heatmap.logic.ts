@@ -17,15 +17,12 @@ export const gaussianSample = (mean: number, std: number, rng: () => number): nu
 // Converts cluster weights into cumulative thresholds used in the generation
 // loop. Computing this once outside the loop avoids n * clusters.length
 // floating-point additions.
+// slice(0, -1) drops the last cluster weight — the last cluster is the implicit
+// remainder, so its boundary never needs a threshold entry.
 
 export const buildCumulativeWeights = (clusters: GaussianCluster[]): number[] => {
-  const thresholds: number[] = []
   let cumSum = 0
-  for (let i = 0; i < clusters.length - 1; i++) {
-    cumSum += clusters[i].weight
-    thresholds.push(cumSum)
-  }
-  return thresholds
+  return clusters.slice(0, -1).map(c => (cumSum += c.weight))
 }
 
 // ── Data generation ─────────────────────────────────────────────────────────
@@ -37,12 +34,9 @@ export const generateTradePoints = (config: ExampleConfig): TradePoint[] => {
   const thresholds = buildCumulativeWeights(clusters)
 
   for (let i = 0; i < totalPoints; i++) {
-    const roll = rng()
-    let clusterIdx = clusters.length - 1
-    for (let j = 0; j < thresholds.length; j++) {
-      if (roll < thresholds[j]) { clusterIdx = j; break }
-    }
-    const cluster = clusters[clusterIdx]
+    // d3.bisectRight returns the insertion index of roll in the sorted thresholds
+    // array, which is exactly the cluster index to use — no inner loop needed.
+    const cluster = clusters[d3.bisectRight(thresholds, rng())]
     points[i] = {
       t: rng(),
       price: gaussianSample(cluster.mean, cluster.std, rng),
@@ -77,31 +71,27 @@ export const buildBins = (
     .domain([0, 1])
     .thresholds(d3.range(0, 1, 1 / cols))
 
-  const tBuckets = tBinner(points)
-  const cells: BinCell[] = []
+  // Hoist pBinner outside the column loop — its config (domain, thresholds) is
+  // identical for every column, so building it once avoids cols redundant
+  // d3.bin() + d3.range() allocations.
+  const pBinner = d3
+    .bin<TradePoint, number>()
+    .value(p => p.price)
+    .domain([priceMin, priceMax])
+    .thresholds(d3.range(priceMin, priceMax, (priceMax - priceMin) / rows))
 
-  tBuckets.forEach((tBucket, colIdx) => {
-    const pBinner = d3
-      .bin<TradePoint, number>()
-      .value(p => p.price)
-      .domain([priceMin, priceMax])
-      .thresholds(d3.range(priceMin, priceMax, (priceMax - priceMin) / rows))
-
-    const pBuckets = pBinner(tBucket)
-
-    pBuckets.forEach((pBucket, rowIdx) => {
-      cells.push({
-        colIdx,
-        rowIdx,
-        count: pBucket.length,
-        normalised: 0,
-        tMin: tBucket.x0 ?? 0,
-        tMax: tBucket.x1 ?? 1,
-        priceMin: pBucket.x0 ?? priceMin,
-        priceMax: pBucket.x1 ?? priceMax,
-      })
-    })
-  })
+  const cells: BinCell[] = tBinner(points).flatMap((tBucket, colIdx) =>
+    pBinner(tBucket).map((pBucket, rowIdx) => ({
+      colIdx,
+      rowIdx,
+      count: pBucket.length,
+      normalised: 0,
+      tMin: tBucket.x0 ?? 0,
+      tMax: tBucket.x1 ?? 1,
+      priceMin: pBucket.x0 ?? priceMin,
+      priceMax: pBucket.x1 ?? priceMax,
+    }))
+  )
 
   const maxCount = d3.max(cells, c => c.count) ?? 1
   cells.forEach(c => { c.normalised = c.count / maxCount })
