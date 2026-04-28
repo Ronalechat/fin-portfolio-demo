@@ -1,0 +1,52 @@
+/* ── Outer container ── */
+.container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* ── Flex column: tab bar on top, chart filling the rest ── */
+.chartWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Chart area grows to fill remaining space below the tab bar ── */
+.chartArea {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── SVG root ── */
+.svgRoot {
+  display: block;
+}
+
+/* ── Invisible pointer-capture overlay on the SVG plot area ── */
+.overlayRect {
+  cursor: crosshair;
+  /* Disable browser default scroll/zoom gestures on touch so pointer events
+     fire uninterrupted while a finger drags across the heatmap. */
+  touch-action: none;
+}
+
+/* ── Floating tooltip bubble ── */
+.tooltip {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 5px 9px;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+}
+
+/* ── Individual data line inside the tooltip ── */
+.tooltipLine {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-1);
+  line-height: 1.6;
+}
