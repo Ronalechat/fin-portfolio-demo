@@ -3,11 +3,8 @@ import { GallerySidebar } from '../components/gallery/GallerySidebar'
 import { LttbLineChart } from '../components/gallery/exhibits/LttbLineChart'
 import { OhlcCandlestick } from '../components/gallery/exhibits/OhlcCandlestick'
 import { DensityHeatmap } from '../components/gallery/exhibits/DensityHeatmap'
+import { Box } from '../components/ui/Box'
 
-// Exhibits 4-6 are lazy-loaded: they will be heavier (force simulation, etc.)
-// and there is no reason to bundle them into the initial chunk when the user
-// may never visit them. React.lazy + Suspense gives us code-splitting for free
-// with Vite's dynamic import chunking.
 const ForceNetworkLazy = lazy(() =>
   import('../components/gallery/exhibits/ForceNetwork').then(m => ({ default: m.ForceNetwork }))
 )
@@ -19,89 +16,38 @@ const ParallelCoordinatesLazy = lazy(() =>
 )
 
 const lazyFallback = (
-  <div
-    style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
+  <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center">
     <span style={{ color: 'var(--text-2)', fontSize: 12 }}>Loading…</span>
-  </div>
+  </Box>
 )
 
-function renderExhibit(n: number) {
+const renderExhibit = (n: number) => {
   switch (n) {
-    case 1:
-      return <LttbLineChart />
-    case 2:
-      return <OhlcCandlestick />
-    case 3:
-      return <DensityHeatmap />
-    case 4:
-      return (
-        <Suspense fallback={lazyFallback}>
-          <ForceNetworkLazy />
-        </Suspense>
-      )
-    case 5:
-      return (
-        <Suspense fallback={lazyFallback}>
-          <CrossfilterScatterLazy />
-        </Suspense>
-      )
-    case 6:
-      return (
-        <Suspense fallback={lazyFallback}>
-          <ParallelCoordinatesLazy />
-        </Suspense>
-      )
-    default:
-      return null
+    case 1: return <LttbLineChart />
+    case 2: return <OhlcCandlestick />
+    case 3: return <DensityHeatmap />
+    case 4: return <Suspense fallback={lazyFallback}><ForceNetworkLazy /></Suspense>
+    case 5: return <Suspense fallback={lazyFallback}><CrossfilterScatterLazy /></Suspense>
+    case 6: return <Suspense fallback={lazyFallback}><ParallelCoordinatesLazy /></Suspense>
+    default: return null
   }
 }
 
-export function GalleryPage() {
+export const GalleryPage = () => {
   const [activeExhibit, setActiveExhibit] = useState(1)
 
   return (
     <>
-      {/* Mobile view: DensityHeatmap is touch-optimised and works at any width */}
-      <div
-        className="mobile-only"
-        style={{
-          flex: 1,
-          flexDirection: 'column',
-          padding: '24px 16px',
-          overflowY: 'auto',
-        }}
-      >
+      <Box className="mobile-only" flex={1} flexDirection="column" padding="24px 16px" overflowY="auto">
         <DensityHeatmap />
-      </div>
+      </Box>
 
-      {/* Desktop layout — hidden on mobile via CSS */}
-      <div
-        className="hide-mobile"
-        style={{
-          display: 'flex',
-          flex: 1,
-          minHeight: 0, // critical: allows flex children to scroll independently
-        }}
-      >
+      <Box className="hide-mobile" display="flex" flex={1} minHeight={0}>
         <GallerySidebar active={activeExhibit} onSelect={setActiveExhibit} />
-
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '32px 40px',
-          }}
-        >
+        <Box flex={1} overflowY="auto" padding="32px 40px">
           {renderExhibit(activeExhibit)}
-        </div>
-      </div>
+        </Box>
+      </Box>
     </>
   )
 }
