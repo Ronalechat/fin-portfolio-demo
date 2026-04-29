@@ -44,18 +44,19 @@ export const EXAMPLES: ExampleConfig[] = [
     description: '30,000 events from a single wide distribution (σ=65). The coarser 40×30 grid prevents most cells from being empty. Demonstrates that perceived density depends on both point count and bin size.',
   },
   {
-    id: 'spike-cluster',
-    label: 'Spike Cluster',
-    seed: 13,
-    totalPoints: 200_000,
+    id: 'rothko-bands',
+    label: 'Rothko Bands',
+    seed: 21,
+    totalPoints: 120_000,
     cols: 60,
-    rows: 40,
+    rows: 8,
     clusters: [
-      { mean: 180, std: 4,  weight: 0.90 },
-      { mean: 180, std: 35, weight: 0.10 },
+      { mean: 310, std: 20, weight: 0.22 },
+      { mean: 200, std: 30, weight: 0.48 },
+      { mean: 78,  std: 18, weight: 0.30 },
     ],
-    intro: 'One dominant tight cluster (90%) with a wide diffuse halo (10%) at 200k points.',
-    description: '200,000 events: 90% within σ=4 of $180, 10% forming a wide halo. The Viridis scale compresses toward the spike peak — the halo appears near-invisible, showing how extreme density contrast affects colour perception.',
+    intro: 'Three price bands rendered as thick horizontal slabs — the density contrast recalls Mark Rothko\'s colour field canvases.',
+    description: '120,000 events across three Gaussian bands at $78, $200, and $310. The coarse 60×8 grid forces each cluster into a solid rectangular zone; the dominant centre band (48% of events) burns brightest while the upper and lower bands glow at lower intensity. Empty price ranges between the bands recede to near-black, reproducing the atmospheric weight Rothko achieved with layered paint.',
   },
 ]
 

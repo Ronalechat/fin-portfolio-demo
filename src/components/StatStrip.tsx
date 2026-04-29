@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { portfolioData, TOTAL_PORTFOLIO_VALUE } from '../data/generateData'
+import { Box } from './ui/Box'
+import { Text } from './ui/Text'
 
 interface Props {
   filteredIds: Set<number> | null
@@ -7,24 +9,19 @@ interface Props {
   globalFilter: string
 }
 
-const NUM: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-  letterSpacing: '-0.02em',
-}
-
-function fmt(n: number): string {
+const fmt = (n: number): string => {
   if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`
   if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`
   return `$${(n / 1e3).toFixed(0)}K`
 }
 
-function fmtDate(d: Date): string {
-  return d.toLocaleDateString('en-AU', { day: '2-digit', month: 'short' })
-}
+const fmtDate = (d: Date): string =>
+  d.toLocaleDateString('en-AU', { day: '2-digit', month: 'short' })
 
-export function StatStrip({ filteredIds, dateRange, globalFilter }: Props) {
+const Dot = () => <Text variant="caption" color="var(--border)">·</Text>
+
+export const StatStrip = ({ filteredIds, dateRange, globalFilter }: Props) => {
   const stats = useMemo(() => {
-    // Global stats — always computed
     const totalPnl = portfolioData.reduce((s, p) => s + p.pnlDollar, 0)
 
     if (globalFilter) {
@@ -34,7 +31,6 @@ export function StatStrip({ filteredIds, dateRange, globalFilter }: Props) {
     }
 
     if (!filteredIds) {
-      // No brush — show global portfolio summary
       return {
         mode: 'global' as const,
         count: portfolioData.length,
@@ -43,13 +39,9 @@ export function StatStrip({ filteredIds, dateRange, globalFilter }: Props) {
       }
     }
 
-    // Brush active — show what's inside the selection
     const filteredPositions = portfolioData.filter((p) => filteredIds.has(p.id))
-    let volume = 0
-    let buyVol = 0
-    let sellVol = 0
+    let volume = 0, buyVol = 0, sellVol = 0
 
-    // ISO string comparison avoids new Date() per trade — lexicographic = chronological
     const startStr = dateRange ? dateRange[0].toISOString().slice(0, 10) : null
     const endStr   = dateRange ? dateRange[1].toISOString().slice(0, 10) : null
 
@@ -74,90 +66,65 @@ export function StatStrip({ filteredIds, dateRange, globalFilter }: Props) {
     }
   }, [filteredIds, dateRange, globalFilter])
 
-  const base: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 20,
-    padding: '0 12px',
-    height: 28,
-    borderBottom: '1px solid var(--border)',
-    background: 'var(--bg)',
-    flexShrink: 0,
-    fontSize: 11,
-    color: 'var(--text-2)',
-    fontFamily: 'ui-sans-serif, system-ui',
-    letterSpacing: '0.01em',
-    overflow: 'hidden',
-  }
-
-  if (stats.mode === 'search') {
-    return (
-      <div style={base}>
-        <span>
-          <span style={{ ...NUM, color: 'var(--text-1)' }}>{stats.count.toLocaleString()}</span>
-          {' '}positions matching{' '}
-          <span style={{ color: 'var(--accent)', fontWeight: 500 }}>{stats.query}</span>
-        </span>
-      </div>
-    )
-  }
-
-  if (stats.mode === 'global') {
-    return (
-      <div style={base}>
-        <span>
-          <span style={{ ...NUM, color: 'var(--text-1)' }}>{stats.count.toLocaleString()}</span>
-          {' '}positions
-        </span>
-        <Dot />
-        <span>
-          AUM{' '}
-          <span style={{ ...NUM, color: 'var(--text-1)' }}>{fmt(stats.aum)}</span>
-        </span>
-        <Dot />
-        <span>
-          Unrealised{' '}
-          <span style={{ ...NUM, color: stats.pnl >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
-            {stats.pnl >= 0 ? '+' : ''}{fmt(stats.pnl)}
-          </span>
-        </span>
-      </div>
-    )
-  }
-
-  // Brush mode
   return (
-    <div style={base}>
-      <span>
-        <span style={{ ...NUM, color: 'var(--accent)' }}>{stats.count.toLocaleString()}</span>
-        {' '}positions in range
-      </span>
-      {stats.dateRange && (
-        <>
-          <Dot />
-          <span style={{ ...NUM, color: 'var(--text-2)', fontSize: 10 }}>
-            {fmtDate(stats.dateRange[0])} – {fmtDate(stats.dateRange[1])}
-          </span>
-        </>
+    <Box
+      display="flex" alignItems="center" gap={20}
+      style={{
+        padding: '0 12px',
+        height: 28,
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--bg)',
+        flexShrink: 0,
+        overflow: 'hidden',
+      }}
+    >
+      {stats.mode === 'search' && (
+        <Text variant="caption">
+          <Text variant="mono" color="var(--text-1)">{stats.count.toLocaleString()}</Text>
+          {' '}positions matching{' '}
+          <Text variant="caption" color="var(--accent)" weight={500}>{stats.query}</Text>
+        </Text>
       )}
-      <Dot />
-      <span>
-        <span style={{ ...NUM, color: 'var(--text-1)' }}>{fmt(stats.volume)}</span>
-        {' '}volume
-      </span>
-      <Dot />
-      <span style={{
-        fontSize: 10,
-        fontWeight: 600,
-        letterSpacing: '0.06em',
-        color: stats.netSide === 'BUY' ? 'var(--positive)' : 'var(--negative)',
-      }}>
-        net {stats.netSide}
-      </span>
-    </div>
-  )
-}
 
-function Dot() {
-  return <span style={{ color: 'var(--border)', fontSize: 10 }}>·</span>
+      {stats.mode === 'global' && <>
+        <Text variant="caption">
+          <Text variant="mono" color="var(--text-1)">{stats.count.toLocaleString()}</Text>
+          {' '}positions
+        </Text>
+        <Dot />
+        <Text variant="caption">
+          AUM <Text variant="mono" color="var(--text-1)">{fmt(stats.aum)}</Text>
+        </Text>
+        <Dot />
+        <Text variant="caption">
+          Unrealised{' '}
+          <Text variant="mono" color={stats.pnl >= 0 ? 'var(--positive)' : 'var(--negative)'}>
+            {stats.pnl >= 0 ? '+' : ''}{fmt(stats.pnl)}
+          </Text>
+        </Text>
+      </>}
+
+      {stats.mode === 'brush' && <>
+        <Text variant="caption">
+          <Text variant="mono" color="var(--accent)">{stats.count.toLocaleString()}</Text>
+          {' '}positions in range
+        </Text>
+        {stats.dateRange && <>
+          <Dot />
+          <Text variant="monoSm">
+            {fmtDate(stats.dateRange[0])} – {fmtDate(stats.dateRange[1])}
+          </Text>
+        </>}
+        <Dot />
+        <Text variant="caption">
+          <Text variant="mono" color="var(--text-1)">{fmt(stats.volume)}</Text>
+          {' '}volume
+        </Text>
+        <Dot />
+        <Text variant="label" color={stats.netSide === 'BUY' ? 'var(--positive)' : 'var(--negative)'}>
+          net {stats.netSide}
+        </Text>
+      </>}
+    </Box>
+  )
 }

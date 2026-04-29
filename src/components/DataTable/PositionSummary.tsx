@@ -1,4 +1,6 @@
 import type { Trade } from '../../data/types'
+import { Box } from '../ui/Box'
+import { Text } from '../ui/Text'
 import styles from './table.module.css'
 
 interface PositionSummaryProps { trades: Trade[] }
@@ -15,23 +17,23 @@ export const PositionSummary = ({ trades }: PositionSummaryProps) => {
 
   return (
     <div className={styles.summaryRow}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em' }} className={styles.positive}>
+      <Box display="flex" alignItems="center" gap={6} flexShrink={0}>
+        <Text variant="caption" color="var(--positive)" weight={600} style={{ letterSpacing: '0.04em' }}>
           {buyCount} BUY
-        </span>
-        <span style={{ fontSize: 9 }} className={styles.muted}>·</span>
-        <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em' }} className={styles.negative}>
+        </Text>
+        <Text variant="caption" color="var(--border)">·</Text>
+        <Text variant="caption" color="var(--negative)" weight={600} style={{ letterSpacing: '0.04em' }}>
           {sellCount} SELL
-        </span>
-      </div>
+        </Text>
+      </Box>
 
       <div className={styles.summaryBar}>
         <div className={styles.summaryBarFill} style={{ width: `${buyRatio}%` }} />
       </div>
 
-      <div className={styles.summaryVolume}>
+      <Text variant="monoSm" className={styles.summaryVolume}>
         ${(totalValue / 1000).toFixed(1)}K traded
-      </div>
+      </Text>
     </div>
   )
 }
