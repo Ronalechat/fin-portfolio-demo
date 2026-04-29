@@ -46,17 +46,19 @@ export const EXAMPLES: ExampleConfig[] = [
   {
     id: 'rothko-bands',
     label: 'Rothko Bands',
-    seed: 21,
-    totalPoints: 120_000,
-    cols: 60,
-    rows: 8,
+    seed: 77,
+    totalPoints: 100_000,
+    cols: 55,
+    rows: 20,
+    colorScale: 'inferno',
+    height: 560,
     clusters: [
-      { mean: 310, std: 20, weight: 0.22 },
-      { mean: 200, std: 30, weight: 0.48 },
-      { mean: 78,  std: 18, weight: 0.30 },
+      { mean: 480, std: 5,  weight: 0.001 },
+      { mean: 250, std: 18, weight: 0.320 },
+      { mean: 100, std: 28, weight: 0.679 },
     ],
-    intro: 'Three price bands rendered as thick horizontal slabs — the density contrast recalls Mark Rothko\'s colour field canvases.',
-    description: '120,000 events across three Gaussian bands at $78, $200, and $310. The coarse 60×8 grid forces each cluster into a solid rectangular zone; the dominant centre band (48% of events) burns brightest while the upper and lower bands glow at lower intensity. Empty price ranges between the bands recede to near-black, reproducing the atmospheric weight Rothko achieved with layered paint.',
+    intro: 'A vast dark void above two luminous colour fields — after Rothko\'s late paintings.',
+    description: '100,000 events across two real clusters. A near-zero phantom cluster at $480 stretches the price axis upward without adding visible density, leaving the top ~40% of the chart as a near-black expanse. Two warm clusters below — a mid strip at $250 and a dominant lower field at $100 — burn through the Inferno palette from deep crimson to amber. The 55×20 grid gives each band enough rows to read as a solid colour field.',
   },
 ]
 

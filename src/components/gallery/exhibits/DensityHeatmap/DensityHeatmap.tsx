@@ -29,7 +29,7 @@ export const DensityHeatmap = () => {
       description={config.description}
       totalPoints={config.totalPoints}
       renderedPoints={config.totalPoints}
-      height={480}
+      height={config.height ?? 480}
     >
       <div className={styles.chartWrapper}>
         <TabBar items={TAB_ITEMS} activeId={activeId} onSelect={setActiveId} />
@@ -39,6 +39,7 @@ export const DensityHeatmap = () => {
             priceExtent={priceExtent}
             cols={config.cols}
             rows={config.rows}
+            colorScale={config.colorScale}
           />
         </div>
       </div>

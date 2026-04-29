@@ -8,14 +8,25 @@ const MARGIN = { top: 8, right: 100, bottom: 32, left: 52 } as const
 
 const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] as const
 
+const COLOR_SCALES: Record<string, (t: number) => string> = {
+  viridis: d3.interpolateViridis,
+  inferno: d3.interpolateInferno,
+  magma:   d3.interpolateMagma,
+  plasma:  d3.interpolatePlasma,
+  warm:    d3.interpolateWarm,
+  cool:    d3.interpolateCool,
+}
+
 interface HeatmapChartProps {
   cells: BinCell[]
   priceExtent: [number, number]
   cols: number
   rows: number
+  colorScale?: string
 }
 
-export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartProps) => {
+export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale }: HeatmapChartProps) => {
+  const interpolate = COLOR_SCALES[colorScale ?? 'viridis'] ?? d3.interpolateViridis
   const svgRef          = useRef<SVGSVGElement>(null)
   const containerRef    = useRef<HTMLDivElement>(null)
   const cellGRef        = useRef<SVGGElement>(null)
@@ -67,7 +78,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartPro
       .attr('y',      c => yScale(c.priceMax))
       .attr('width',  cellW)
       .attr('height', cellH)
-      .attr('fill',   c => d3.interpolateViridis(c.normalised))
+      .attr('fill',   c => interpolate(c.normalised))
 
     if (xAxisRef.current) {
       d3.select<SVGGElement, unknown>(xAxisRef.current).call(
@@ -91,7 +102,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartPro
       )
       styleAxis(yAxisRef.current)
     }
-  }, [cells, cols, rows, innerW, innerH, priceExtent])
+  }, [cells, cols, rows, innerW, innerH, priceExtent, interpolate])
 
   // ── Legend sizing ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -196,13 +207,13 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartPro
         className={styles.svgRoot}
       >
         <defs>
-          {/* Viridis gradient for the colour legend — 10 stops bottom (0) → top (1) */}
-          <linearGradient id="viridis-legend" x1="0" x2="0" y1="1" y2="0">
+          {/* Colour legend gradient — 10 stops bottom (0) → top (1) */}
+          <linearGradient id="heatmap-gradient" x1="0" x2="0" y1="1" y2="0">
             {d3.range(0, 1.01, 0.1).map((t, i) => (
               <stop
                 key={i}
                 offset={`${(t * 100).toFixed(0)}%`}
-                stopColor={d3.interpolateViridis(t)}
+                stopColor={interpolate(t)}
               />
             ))}
           </linearGradient>
@@ -279,7 +290,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows }: HeatmapChartPro
               y={legendY}
               width={12}
               height={legendH}
-              fill="url(#viridis-legend)"
+              fill="url(#heatmap-gradient)"
             />
             <text
               x={16}
