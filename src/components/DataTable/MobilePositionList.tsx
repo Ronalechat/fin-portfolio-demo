@@ -1,26 +1,70 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { portfolioData } from '../../data/generateData'
 import type { Trade, Position } from '../../data/types'
+import type { SelectedTrade } from '../PortfolioChart/PortfolioChart'
 import { fmtDollar } from '../../lib/format'
 import { Sparkline } from './Sparkline'
 import { TradeDetailPanel } from './TradeDetailPanel'
 import styles from './table.module.css'
 
-interface SelectedTrade { trade: Trade; position: Position }
+interface Props {
+  selectedTrade?: SelectedTrade | null
+  onTradeSelect?: (st: SelectedTrade | null) => void
+  filteredIds?: Set<number> | null
+}
 
-export const MobilePositionList = () => {
+export const MobilePositionList = ({ selectedTrade: selectedProp, onTradeSelect, filteredIds }: Props) => {
   const [filter, setFilter] = useState('')
-  const [selected, setSelected] = useState<SelectedTrade | null>(null)
+  const [selectedLocal, setSelectedLocal] = useState<SelectedTrade | null>(null)
+
+  const isControlled = selectedProp !== undefined
+  const selected = isControlled ? selectedProp : selectedLocal
+
+  const setSelected = useCallback((st: SelectedTrade | null) => {
+    if (isControlled) {
+      onTradeSelect?.(st)
+    } else {
+      setSelectedLocal(st)
+    }
+  }, [isControlled, onTradeSelect])
+
+  // Scroll lock
+  useEffect(() => {
+    document.body.style.overflow = selected ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [selected])
+
+  // Drag-to-dismiss
+  const [dragY, setDragY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStart = useRef(0)
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    dragStart.current = e.touches[0]!.clientY
+    setIsDragging(true)
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const delta = e.touches[0]!.clientY - dragStart.current
+    setDragY(Math.max(0, delta))
+  }, [])
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false)
+    if (dragY > 120) {
+      setSelected(null)
+    }
+    setDragY(0)
+  }, [dragY, setSelected])
 
   const filtered = filter
     ? portfolioData.filter(p => p.ticker.toUpperCase().includes(filter.toUpperCase()))
     : portfolioData
 
-  const handleTradeSelect = useCallback((trade: Trade, position: Position) => {
-    setSelected(prev =>
-      prev?.trade.tradeId === trade.tradeId ? null : { trade, position }
-    )
-  }, [])
+  const handleRowTap = useCallback((trade: Trade, position: Position) => {
+    const isActive = selected?.trade.tradeId === trade.tradeId
+    setSelected(isActive ? null : { trade, position })
+  }, [selected, setSelected])
 
   return (
     <div className={styles.mobileList}>
@@ -46,15 +90,15 @@ export const MobilePositionList = () => {
       <div className={styles.mobileScroll}>
         {filtered.map((pos) => {
           const isPositive = pos.pnlDollar >= 0
+          const isDimmed = filteredIds != null && !filteredIds.has(pos.id)
           return (
             <div
               key={pos.id}
               className={styles.mobileRow}
+              style={{ opacity: isDimmed ? 0.3 : 1, transition: 'opacity 0.2s ease' }}
               onClick={() => {
-                /* expand to show first trade on tap — open detail on second tap */
                 if (pos.trades.length > 0) {
-                  const t = pos.trades[0]!
-                  handleTradeSelect(t, pos)
+                  handleRowTap(pos.trades[0]!, pos)
                 }
               }}
             >
@@ -90,7 +134,16 @@ export const MobilePositionList = () => {
           className={styles.mobileOverlay}
           onClick={(e) => { if (e.target === e.currentTarget) setSelected(null) }}
         >
-          <div className={styles.mobileSheet}>
+          <div
+            className={styles.mobileSheet}
+            style={{
+              transform: `translateY(${dragY}px)`,
+              transition: isDragging ? 'none' : 'transform 0.2s ease',
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <div className={styles.mobileSheetHandle} />
             <TradeDetailPanel
               trade={selected.trade}

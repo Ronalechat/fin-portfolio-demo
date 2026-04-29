@@ -23,10 +23,12 @@ interface HeatmapChartProps {
   cols: number
   rows: number
   colorScale?: string
+  colorScaleFloor?: number
 }
 
-export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale }: HeatmapChartProps) => {
+export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, colorScaleFloor }: HeatmapChartProps) => {
   const interpolate = COLOR_SCALES[colorScale ?? 'viridis'] ?? d3.interpolateViridis
+  const floor = colorScaleFloor ?? 0
   const svgRef          = useRef<SVGSVGElement>(null)
   const containerRef    = useRef<HTMLDivElement>(null)
   const cellGRef        = useRef<SVGGElement>(null)
@@ -69,6 +71,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale }: Hea
 
     const cellW = innerW / cols
     const cellH = innerH / rows
+    const toT = (n: number) => floor + n * (1 - floor)
 
     cellG
       .selectAll<SVGRectElement, BinCell>('rect')
@@ -78,7 +81,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale }: Hea
       .attr('y',      c => yScale(c.priceMax))
       .attr('width',  cellW)
       .attr('height', cellH)
-      .attr('fill',   c => interpolate(c.normalised))
+      .attr('fill',   c => interpolate(toT(c.normalised)))
 
     if (xAxisRef.current) {
       d3.select<SVGGElement, unknown>(xAxisRef.current).call(
@@ -102,7 +105,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale }: Hea
       )
       styleAxis(yAxisRef.current)
     }
-  }, [cells, cols, rows, innerW, innerH, priceExtent, interpolate])
+  }, [cells, cols, rows, innerW, innerH, priceExtent, interpolate, floor])
 
   // ── Legend sizing ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -213,7 +216,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale }: Hea
               <stop
                 key={i}
                 offset={`${(t * 100).toFixed(0)}%`}
-                stopColor={interpolate(t)}
+                stopColor={interpolate(floor + t * (1 - floor))}
               />
             ))}
           </linearGradient>
@@ -222,6 +225,16 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale }: Hea
         <g transform={`translate(${MARGIN.left},${MARGIN.top})`}>
           {/* Heat cells — D3-managed for performance */}
           <g ref={cellGRef} />
+
+          {/* Chart area border — makes dark void visible against page background */}
+          <rect
+            x={0} y={0}
+            width={innerW} height={innerH}
+            fill="none"
+            stroke="var(--border)"
+            strokeWidth={1}
+            pointerEvents="none"
+          />
 
           {/* Highlight rect — repositioned via setAttribute (no D3 redraw) */}
           <rect
