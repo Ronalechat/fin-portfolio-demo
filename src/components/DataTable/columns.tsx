@@ -4,64 +4,57 @@ import type { Position } from '../../data/types'
 import { TOTAL_PORTFOLIO_VALUE } from '../../data/generateData'
 import { fmtDollar, fmtK } from '../../lib/format'
 import { Sparkline } from './Sparkline'
+import styles from './table.module.css'
 
 const ch = createColumnHelper<Position>()
 
+const expanderCol = ch.display({
+  id: 'expander',
+  size: 36,
+  header: () => null,
+  cell: ({ row }) => (
+    <button
+      onClick={(e) => { e.stopPropagation(); row.toggleExpanded() }}
+      className={styles.expandBtn}
+      aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
+    >
+      {row.getIsExpanded() ? (
+        <CaretDown size={11} weight="bold" />
+      ) : (
+        <CaretRight size={11} weight="bold" />
+      )}
+    </button>
+  ),
+})
+
+const tickerCol = ch.accessor('ticker', {
+  header: 'Ticker',
+  size: 88,
+  enableSorting: true,
+  cell: (info) => (
+    <span className={styles.tickerCell}>{info.getValue()}</span>
+  ),
+})
+
+const tickerColWide = ch.accessor('ticker', {
+  id: 'ticker',
+  header: 'Ticker',
+  size: 120,
+  enableSorting: true,
+  cell: (info) => (
+    <span className={styles.tickerCell}>{info.getValue()}</span>
+  ),
+})
+
 export const COLUMNS = [
-  ch.display({
-    id: 'expander',
-    size: 36,
-    header: () => null,
-    cell: ({ row }) => (
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          row.toggleExpanded()
-        }}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: 'var(--text-2)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 0,
-          width: 20,
-          height: 20,
-          transition: 'color 0.15s',
-        }}
-        aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
-      >
-        {row.getIsExpanded() ? (
-          <CaretDown size={11} weight="bold" />
-        ) : (
-          <CaretRight size={11} weight="bold" />
-        )}
-      </button>
-    ),
-  }),
-  ch.accessor('ticker', {
-    header: 'Ticker',
-    size: 88,
-    enableSorting: true,
-    cell: (info) => (
-      <span style={{ fontWeight: 600, fontSize: 12, letterSpacing: '0.04em', color: 'var(--text-1)' }}>
-        {info.getValue()}
-      </span>
-    ),
-  }),
+  expanderCol,
+  tickerCol,
   ch.display({
     id: 'tradeCount',
     header: 'Trades',
     size: 60,
     cell: ({ row }) => (
-      <span style={{
-        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-        fontSize: 11,
-        color: 'var(--text-2)',
-        letterSpacing: '-0.02em',
-      }}>
+      <span className="num" style={{ color: 'var(--text-2)' }}>
         {row.original.trades.length}
       </span>
     ),
@@ -138,10 +131,48 @@ export const COLUMNS = [
     header: 'Trend',
     size: 72,
     cell: ({ row }) => (
-      <Sparkline
-        trades={row.original.trades}
-        pnlDollar={row.original.pnlDollar}
-      />
+      <Sparkline trades={row.original.trades} pnlDollar={row.original.pnlDollar} />
+    ),
+  }),
+]
+
+export const MOBILE_COLUMNS = [
+  expanderCol,
+  tickerColWide,
+  ch.accessor('pnlDollar', {
+    id: 'pnlDollar',
+    header: 'P&L ($)',
+    size: 110,
+    enableSorting: true,
+    cell: (info) => {
+      const v = info.getValue()
+      return (
+        <span className="num" style={{ color: v >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
+          {v >= 0 ? '+' : ''}${fmtDollar(v)}
+        </span>
+      )
+    },
+  }),
+  ch.accessor('pnlPercent', {
+    id: 'pnlPercent',
+    header: 'P&L (%)',
+    size: 90,
+    enableSorting: true,
+    cell: (info) => {
+      const v = info.getValue()
+      return (
+        <span className="num" style={{ color: v >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
+          {v >= 0 ? '+' : ''}{v.toFixed(2)}%
+        </span>
+      )
+    },
+  }),
+  ch.display({
+    id: 'trend',
+    header: 'Trend',
+    size: 72,
+    cell: ({ row }) => (
+      <Sparkline trades={row.original.trades} pnlDollar={row.original.pnlDollar} />
     ),
   }),
 ]
