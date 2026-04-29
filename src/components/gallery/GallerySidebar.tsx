@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Text } from '../ui/Text'
 
 interface Props {
   active: number
@@ -14,23 +15,19 @@ const EXHIBITS = [
   { n: 6, label: 'Parallel Coordinates' },
 ] as const
 
-export function GallerySidebar({ active, onSelect }: Props) {
-  // Track which item is hovered via local state — this is purely cosmetic
-  // presentation state (not animation or data), so useState is appropriate here.
+export const GallerySidebar = ({ active, onSelect }: Props) => {
   const [hovered, setHovered] = useState<number | null>(null)
 
   return (
-    <nav
-      style={{
-        width: 180,
-        flexShrink: 0,
-        borderRight: '1px solid var(--border)',
-        paddingTop: 24,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-      }}
-    >
+    <nav style={{
+      width: 180,
+      flexShrink: 0,
+      borderRight: '1px solid var(--border)',
+      paddingTop: 24,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 2,
+    }}>
       {EXHIBITS.map(({ n, label }) => {
         const isActive = n === active
         const isHovered = n === hovered
@@ -42,7 +39,6 @@ export function GallerySidebar({ active, onSelect }: Props) {
             onMouseEnter={() => setHovered(n)}
             onMouseLeave={() => setHovered(null)}
             style={{
-              // Reset button defaults
               appearance: 'none',
               background: isHovered ? 'rgba(255,255,255,0.03)' : 'none',
               border: 'none',
@@ -57,29 +53,13 @@ export function GallerySidebar({ active, onSelect }: Props) {
               transition: 'background 0.1s',
             }}
           >
-            {/* Exhibit number */}
-            <span
-              style={{
-                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                fontSize: 10,
-                color: isActive ? 'var(--text-1)' : 'var(--text-2)',
-                letterSpacing: '-0.01em',
-                minWidth: 12,
-                flexShrink: 0,
-              }}
-            >
+            <Text variant="monoSm" color={isActive ? 'var(--text-1)' : undefined}
+              style={{ minWidth: 12, flexShrink: 0 }}>
               {n}
-            </span>
-            {/* Exhibit name */}
-            <span
-              style={{
-                fontSize: 12,
-                color: 'var(--text-1)',
-                lineHeight: 1.3,
-              }}
-            >
+            </Text>
+            <Text variant="caption" color="var(--text-1)" style={{ fontSize: 12, lineHeight: 1.3 }}>
               {label}
-            </span>
+            </Text>
           </button>
         )
       })}
