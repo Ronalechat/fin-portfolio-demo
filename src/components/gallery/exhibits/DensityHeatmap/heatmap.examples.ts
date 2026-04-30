@@ -50,16 +50,24 @@ export const EXAMPLES: ExampleConfig[] = [
     totalPoints: 100_000,
     cols: 55,
     rows: 20,
-    colorScale: 'inferno',
-    colorScaleFloor: 0.08,
+    chartBackground: '#EDE0C4',
+    colorStops: [
+      [0,     '#EDE0C4'],  // cream canvas — empty cells show background
+      [0.018, '#EDE0C4'],  // hold cream through truly-empty cells
+      [0.019, '#201D31'],  // abrupt jump to dark charcoal
+      [0.09,  '#201D31'],  // flat dark plateau (dark-void cells land here)
+      [0.10,  '#BB3D1C'],  // abrupt jump to warm orange-red
+      [0.35,  '#C04520'],  // nearly flat warm (cells across warm band)
+      [1.0,   '#C84820'],  // barely brighter at peak density
+    ],
     height: 560,
     clusters: [
-      { mean: 480, std: 5,  weight: 0.001 },
-      { mean: 250, std: 14, weight: 0.320 },
-      { mean: 100, std: 28, weight: 0.679 },
+      { mean: 420, std: 30, weight: 0.05 },  // dark void — real density keeps cells in charcoal plateau
+      { mean: 250, std: 14, weight: 0.30 },  // tight warm upper strip
+      { mean: 100, std: 28, weight: 0.65 },  // dominant warm lower field
     ],
     intro: 'A vast dark void above two luminous colour fields — after Rothko\'s late paintings.',
-    description: '100,000 events across two real clusters. A phantom cluster at $480 stretches the price axis upward, leaving the top ~40% as a visible dark void. Two warm clusters — a tight mid strip at $250 and a dominant lower field at $100 — burn through the Inferno palette from deep crimson to amber, separated by a single dark row.',
+    description: '100,000 events across three clusters on a cream canvas. A dark-void cluster at $420 fills the top 40% with flat charcoal. Two warm clusters — a tight strip at $250 and a dominant lower field at $100 — render as flat warm orange-red rectangles, each separated by a single row of bare canvas. A step-function palette (cream → charcoal → orange) eliminates gradients within each field.',
   },
 ]
 
