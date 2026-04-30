@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ChartTableView } from '../components/ChartTableView'
 import { MobilePositionList } from '../components/DataTable/MobilePositionList'
+import { PortfolioChart, type SelectedTrade } from '../components/PortfolioChart/PortfolioChart'
+import { portfolioData } from '../data/generateData'
 import { Box } from '../components/ui/Box'
 import styles from './workbench.module.css'
 
@@ -44,10 +46,47 @@ const LoadingScreen = ({ onDone }: { onDone: () => void }) => {
 export const WorkbenchPage = () => {
   const [ready, setReady] = useState(false)
 
+  // Mobile chart↔table state
+  const [mobileSelected, setMobileSelected] = useState<SelectedTrade | null>(null)
+  const [mobileDateRange, setMobileDateRange] = useState<[Date, Date] | null>(null)
+  const [mobilePeriodDays, setMobilePeriodDays] = useState(90)
+
+  const mobileFilteredIds = useMemo<Set<number> | null>(() => {
+    if (!mobileDateRange) return null
+    const [start, end] = mobileDateRange
+    const startStr = start.toISOString().slice(0, 10)
+    const endStr   = end.toISOString().slice(0, 10)
+    const ids = new Set<number>()
+    for (const pos of portfolioData) {
+      for (const trade of pos.trades) {
+        if (trade.date >= startStr && trade.date <= endStr) {
+          ids.add(pos.id)
+          break
+        }
+      }
+    }
+    return ids
+  }, [mobileDateRange])
+
   return (
     <>
-      <Box className="mobile-only" flex={1} flexDirection="column">
-        <MobilePositionList />
+      <Box className="mobile-only" flex={1} flexDirection="column" minHeight={0}>
+        <Box height={220} flexShrink={0}>
+          <PortfolioChart
+            onBrush={setMobileDateRange}
+            hasBrush={mobileDateRange !== null}
+            selectedTrade={mobileSelected}
+            periodDays={mobilePeriodDays}
+            onPeriodChange={setMobilePeriodDays}
+            highlightedTicker={null}
+            expandedPositionTrades={null}
+          />
+        </Box>
+        <MobilePositionList
+          selectedTrade={mobileSelected}
+          onTradeSelect={setMobileSelected}
+          filteredIds={mobileFilteredIds}
+        />
       </Box>
 
       <Box className="hide-mobile" flex={1} display="flex" flexDirection="column" minHeight={0} position="relative">

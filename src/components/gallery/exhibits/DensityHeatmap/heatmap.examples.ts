@@ -51,14 +51,15 @@ export const EXAMPLES: ExampleConfig[] = [
     cols: 55,
     rows: 20,
     colorScale: 'inferno',
+    colorScaleFloor: 0.08,
     height: 560,
     clusters: [
       { mean: 480, std: 5,  weight: 0.001 },
-      { mean: 250, std: 18, weight: 0.320 },
+      { mean: 250, std: 14, weight: 0.320 },
       { mean: 100, std: 28, weight: 0.679 },
     ],
     intro: 'A vast dark void above two luminous colour fields — after Rothko\'s late paintings.',
-    description: '100,000 events across two real clusters. A near-zero phantom cluster at $480 stretches the price axis upward without adding visible density, leaving the top ~40% of the chart as a near-black expanse. Two warm clusters below — a mid strip at $250 and a dominant lower field at $100 — burn through the Inferno palette from deep crimson to amber. The 55×20 grid gives each band enough rows to read as a solid colour field.',
+    description: '100,000 events across two real clusters. A phantom cluster at $480 stretches the price axis upward, leaving the top ~40% as a visible dark void. Two warm clusters — a tight mid strip at $250 and a dominant lower field at $100 — burn through the Inferno palette from deep crimson to amber, separated by a single dark row.',
   },
 ]
 
