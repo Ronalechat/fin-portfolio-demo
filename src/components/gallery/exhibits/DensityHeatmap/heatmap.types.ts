@@ -36,7 +36,9 @@ export interface ExampleConfig {
   clusters: GaussianCluster[]
   intro: string
   description: string
-  colorScale?: string       // d3 interpolator key; defaults to 'viridis'
-  colorScaleFloor?: number  // shifts t=0 cells above pure black; e.g. 0.08
-  height?: number           // chart height in px; defaults to 480
+  colorScale?: string            // d3 interpolator key; defaults to 'viridis'
+  colorScaleFloor?: number       // shifts t=0 cells above pure black; e.g. 0.08
+  colorStops?: [number, string][] // custom [t, color] pairs; overrides colorScale
+  chartBackground?: string        // fill behind all cells; shows as canvas/frame
+  height?: number                 // chart height in px; defaults to 480
 }

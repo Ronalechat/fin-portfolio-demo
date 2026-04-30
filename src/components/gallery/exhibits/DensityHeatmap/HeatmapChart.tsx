@@ -17,6 +17,25 @@ const COLOR_SCALES: Record<string, (t: number) => string> = {
   cool:    d3.interpolateCool,
 }
 
+// Piecewise RGB interpolator from [t, color] stops.
+// Cheaper than d3.scaleLinear for arbitrary-domain stops and avoids function
+// reference churn that would re-trigger the D3 useEffect on every render.
+function buildStopInterpolator(stops: [number, string][]): (t: number) => string {
+  const n = stops.length
+  return (t: number) => {
+    const clamped = Math.max(stops[0]![0], Math.min(stops[n - 1]![0], t))
+    for (let i = 0; i < n - 1; i++) {
+      const [lo, loC] = stops[i]!
+      const [hi, hiC] = stops[i + 1]!
+      if (clamped <= hi) {
+        const p = hi === lo ? 0 : (clamped - lo) / (hi - lo)
+        return d3.interpolateRgb(loC, hiC)(p)
+      }
+    }
+    return stops[n - 1]![1]
+  }
+}
+
 interface HeatmapChartProps {
   cells: BinCell[]
   priceExtent: [number, number]
@@ -24,17 +43,31 @@ interface HeatmapChartProps {
   rows: number
   colorScale?: string
   colorScaleFloor?: number
+  colorStops?: [number, string][]
+  chartBackground?: string
 }
 
-export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, colorScaleFloor }: HeatmapChartProps) => {
-  const interpolate = COLOR_SCALES[colorScale ?? 'viridis'] ?? d3.interpolateViridis
-  const floor = colorScaleFloor ?? 0
-  const svgRef          = useRef<SVGSVGElement>(null)
-  const containerRef    = useRef<HTMLDivElement>(null)
-  const cellGRef        = useRef<SVGGElement>(null)
-  const xAxisRef        = useRef<SVGGElement>(null)
-  const yAxisRef        = useRef<SVGGElement>(null)
-  const legendRectRef   = useRef<SVGRectElement>(null)
+export const HeatmapChart = ({
+  cells, priceExtent, cols, rows,
+  colorScale, colorScaleFloor, colorStops, chartBackground,
+}: HeatmapChartProps) => {
+
+  // Stable interpolator — only rebuilds when scale config changes, not on every render.
+  const interpolate = useMemo<(t: number) => string>(() => {
+    if (colorStops && colorStops.length >= 2) {
+      return buildStopInterpolator(colorStops)
+    }
+    const named = COLOR_SCALES[colorScale ?? 'viridis'] ?? d3.interpolateViridis
+    const fl = colorScaleFloor ?? 0
+    return fl > 0 ? (t: number) => named(fl + t * (1 - fl)) : named
+  }, [colorStops, colorScale, colorScaleFloor])
+
+  const svgRef           = useRef<SVGSVGElement>(null)
+  const containerRef     = useRef<HTMLDivElement>(null)
+  const cellGRef         = useRef<SVGGElement>(null)
+  const xAxisRef         = useRef<SVGGElement>(null)
+  const yAxisRef         = useRef<SVGGElement>(null)
+  const legendRectRef    = useRef<SVGRectElement>(null)
   const highlightRectRef = useRef<SVGRectElement>(null)
 
   const [innerW, setInnerW] = useState(600)
@@ -47,14 +80,12 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, color
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
-
     const ro = new ResizeObserver(entries => {
       const rect = entries[0]?.contentRect
       if (!rect) return
       setInnerW(rect.width  - MARGIN.left - MARGIN.right)
       setInnerH(rect.height - MARGIN.top  - MARGIN.bottom)
     })
-
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -68,10 +99,8 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, color
 
     const xScale = d3.scaleLinear([0, 1], [0, innerW])
     const yScale = d3.scaleLinear(priceExtent, [innerH, 0])
-
-    const cellW = innerW / cols
-    const cellH = innerH / rows
-    const toT = (n: number) => floor + n * (1 - floor)
+    const cellW  = innerW / cols
+    const cellH  = innerH / rows
 
     cellG
       .selectAll<SVGRectElement, BinCell>('rect')
@@ -81,7 +110,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, color
       .attr('y',      c => yScale(c.priceMax))
       .attr('width',  cellW)
       .attr('height', cellH)
-      .attr('fill',   c => interpolate(toT(c.normalised)))
+      .attr('fill',   c => interpolate(c.normalised))
 
     if (xAxisRef.current) {
       d3.select<SVGGElement, unknown>(xAxisRef.current).call(
@@ -105,7 +134,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, color
       )
       styleAxis(yAxisRef.current)
     }
-  }, [cells, cols, rows, innerW, innerH, priceExtent, interpolate, floor])
+  }, [cells, cols, rows, innerW, innerH, priceExtent, interpolate])
 
   // ── Legend sizing ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -126,7 +155,7 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, color
   }, [])
 
   const handlePointerMove = useCallback((e: React.PointerEvent<SVGRectElement>) => {
-    const svgEl    = svgRef.current
+    const svgEl     = svgRef.current
     const container = containerRef.current
     if (!svgEl || !container) return
 
@@ -216,25 +245,20 @@ export const HeatmapChart = ({ cells, priceExtent, cols, rows, colorScale, color
               <stop
                 key={i}
                 offset={`${(t * 100).toFixed(0)}%`}
-                stopColor={interpolate(floor + t * (1 - floor))}
+                stopColor={interpolate(t)}
               />
             ))}
           </linearGradient>
         </defs>
 
         <g transform={`translate(${MARGIN.left},${MARGIN.top})`}>
+          {/* Canvas background — visible between colour blocks and at edges */}
+          {chartBackground && (
+            <rect x={0} y={0} width={innerW} height={innerH} fill={chartBackground} />
+          )}
+
           {/* Heat cells — D3-managed for performance */}
           <g ref={cellGRef} />
-
-          {/* Chart area border — makes dark void visible against page background */}
-          <rect
-            x={0} y={0}
-            width={innerW} height={innerH}
-            fill="none"
-            stroke="var(--border)"
-            strokeWidth={1}
-            pointerEvents="none"
-          />
 
           {/* Highlight rect — repositioned via setAttribute (no D3 redraw) */}
           <rect

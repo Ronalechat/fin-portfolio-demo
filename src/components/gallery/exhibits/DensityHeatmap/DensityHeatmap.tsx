@@ -41,6 +41,8 @@ export const DensityHeatmap = () => {
             rows={config.rows}
             colorScale={config.colorScale}
             colorScaleFloor={config.colorScaleFloor}
+            colorStops={config.colorStops}
+            chartBackground={config.chartBackground}
           />
         </div>
       </div>

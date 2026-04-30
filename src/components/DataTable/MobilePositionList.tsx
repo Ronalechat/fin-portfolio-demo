@@ -28,10 +28,13 @@ export const MobilePositionList = ({ selectedTrade: selectedProp, onTradeSelect,
     }
   }, [isControlled, onTradeSelect])
 
-  // Scroll lock
+  // Scroll lock — target only the list container, not the whole page
+  const scrollRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    document.body.style.overflow = selected ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    const el = scrollRef.current
+    if (!el) return
+    el.style.overflow = selected ? 'hidden' : ''
+    return () => { el.style.overflow = '' }
   }, [selected])
 
   // Drag-to-dismiss
@@ -87,7 +90,7 @@ export const MobilePositionList = ({ selectedTrade: selectedProp, onTradeSelect,
         />
       </div>
 
-      <div className={styles.mobileScroll}>
+      <div ref={scrollRef} className={styles.mobileScroll}>
         {filtered.map((pos) => {
           const isPositive = pos.pnlDollar >= 0
           const isDimmed = filteredIds != null && !filteredIds.has(pos.id)
