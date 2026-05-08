@@ -61,9 +61,9 @@ export function WorkbenchPage() {
 
   return (
     <>
-      {/* Mobile notice — shown below 768px */}
+      {/* Mobile notice — shown only where the workbench cannot remain usable. */}
       <div
-        className="mobile-only"
+        className="workbench-mobile-only"
         style={{
           flex: 1,
           flexDirection: 'column',
@@ -92,10 +92,32 @@ export function WorkbenchPage() {
       </div>
 
       {/* Desktop layout */}
-      <div className="hide-mobile" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, position: 'relative' }}>
+      <div
+        className="workbench-desktop"
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          position: 'relative',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+        }}
+      >
         {!ready && <LoadingScreen onDone={() => setReady(true)} />}
         {/* Mount eagerly so data is ready when loading screen fades */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, opacity: ready ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 960,
+            width: '100%',
+            minHeight: 0,
+            opacity: ready ? 1 : 0,
+            transition: 'opacity 0.4s ease',
+          }}
+        >
           <ChartTableView />
         </div>
       </div>

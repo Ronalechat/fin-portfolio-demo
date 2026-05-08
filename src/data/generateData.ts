@@ -105,13 +105,18 @@ function generateTrades(
 }
 
 // ─── Portfolio generation ────────────────────────────────────────────────────
-// 1,500 positions across 30 tickers — large enough to make the virtualiser
-// clearly necessary (~15 rows rendered vs 1,500 in the model), small enough
-// for sub-50ms load and smooth brush interactions.
+// 500 positions across 30 tickers by default — large enough to make the
+// virtualiser clearly useful, small enough for smooth demo load. Override with
+// VITE_POSITION_COUNT when testing heavier or lighter datasets locally.
 // Ticker assignment uses weighted modulo so sector distribution is uneven
 // (more positions in large-cap, fewer in biotech — reflects a real fund tilt).
 
-const POSITION_COUNT = 500
+const DEFAULT_POSITION_COUNT = 500
+const envPositionCount = Number(import.meta.env.VITE_POSITION_COUNT)
+const POSITION_COUNT =
+  Number.isFinite(envPositionCount) && envPositionCount > 0
+    ? Math.floor(envPositionCount)
+    : DEFAULT_POSITION_COUNT
 
 export const portfolioData: Position[] = Array.from(
   { length: POSITION_COUNT },

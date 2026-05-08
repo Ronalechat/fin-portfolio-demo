@@ -52,7 +52,7 @@ export function ChartTableView() {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, minWidth: 0 }}>
       <PortfolioChart
         onBrush={setDateRange}
         hasBrush={dateRange !== null}
@@ -132,7 +132,7 @@ export function ChartTableView() {
       </div>
 
       {/* Table + detail panel */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
         <DataTable
           filteredIds={filteredIds}
           globalFilter={globalFilter}

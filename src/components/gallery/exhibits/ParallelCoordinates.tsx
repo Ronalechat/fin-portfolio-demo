@@ -321,7 +321,7 @@ export function ParallelCoordinates() {
 
     // Reset zoom on resize/rebuild so axis positions are consistent
     zoomRef.current = { k: 1, x: 0 }
-    setIsZoomed(false)
+    requestAnimationFrame(() => setIsZoomed(false))
 
     brushBehaviorsRef.current = {}
     brushGroupsRef.current = {}

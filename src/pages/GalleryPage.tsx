@@ -68,54 +68,31 @@ export function GalleryPage() {
 
   return (
     <>
-      {/* Mobile notice — hidden on desktop via CSS */}
+      {/* Desktop layout */}
       <div
-        className="mobile-only"
-        style={{
-          flex: 1,
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '48px 24px',
-          textAlign: 'center',
-          gap: 16,
-        }}
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="5" y="2" width="14" height="20" rx="2" stroke="var(--accent)" strokeWidth="1.5" />
-          <line x1="9" y1="18" x2="15" y2="18" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
-          Best viewed on desktop
-        </div>
-        <div style={{
-          fontSize: 11, color: 'var(--text-2)', lineHeight: 1.6, maxWidth: 280,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-        }}>
-          The Graph Gallery contains canvas-based interactive charts that require a wide screen.
-          Try opening this page on a laptop or tablet in landscape mode.
-        </div>
-      </div>
-
-      {/* Desktop layout — hidden on mobile via CSS */}
-      <div
-        className="hide-mobile"
+        className="gallery-desktop"
         style={{
           display: 'flex',
           flex: 1,
           minHeight: 0, // critical: allows flex children to scroll independently
+          overflowX: 'auto',
+          overflowY: 'hidden',
         }}
       >
-        <GallerySidebar active={activeExhibit} onSelect={setActiveExhibit} />
+        <div className="gallery-shell" style={{ display: 'flex', flex: 1, minWidth: 1040, minHeight: 0 }}>
+          <GallerySidebar active={activeExhibit} onSelect={setActiveExhibit} />
 
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '32px 40px',
-          }}
-        >
-          {renderExhibit(activeExhibit)}
+          <div
+            className="gallery-content"
+            style={{
+              flex: 1,
+              minWidth: 0,
+              overflowY: 'auto',
+              padding: '32px 40px',
+            }}
+          >
+            {renderExhibit(activeExhibit)}
+          </div>
         </div>
       </div>
     </>

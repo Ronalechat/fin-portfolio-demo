@@ -21,6 +21,7 @@ export function GallerySidebar({ active, onSelect }: Props) {
 
   return (
     <nav
+      className="gallery-sidebar"
       style={{
         width: 180,
         flexShrink: 0,
@@ -38,6 +39,7 @@ export function GallerySidebar({ active, onSelect }: Props) {
         return (
           <button
             key={n}
+            className="gallery-sidebar-item"
             onClick={() => onSelect(n)}
             onMouseEnter={() => setHovered(n)}
             onMouseLeave={() => setHovered(null)}

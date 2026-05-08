@@ -92,7 +92,6 @@ export function LttbLineChart() {
 
   const displayed = useMemo<Point[]>(
     () => lttb(rawData, threshold),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [rawData, threshold]
     // Note: we intentionally do NOT include zoomTransformRef here. After a
     // zoom ends, we call the rebucket function directly (see onZoomEnd below).

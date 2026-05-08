@@ -122,11 +122,88 @@ tr.row-trade:active {
   display: none;
 }
 
+.workbench-desktop {
+  display: flex;
+}
+
+.workbench-mobile-only {
+  display: none;
+}
+
+.gallery-desktop {
+  display: flex;
+}
+
+.gallery-mobile-only {
+  display: none;
+}
+
+.gallery-chart-area {
+  height: var(--gallery-chart-height);
+  overflow: hidden;
+}
+
 @media (max-width: 767px) {
   .hide-mobile {
     display: none !important;
   }
   .mobile-only {
     display: flex !important;
+  }
+}
+
+@media (max-width: 559px) {
+  .workbench-desktop {
+    display: none !important;
+  }
+  .workbench-mobile-only {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .gallery-desktop {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  .gallery-shell {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex-direction: column !important;
+  }
+  .gallery-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 8px 8px 6px !important;
+    gap: 4px !important;
+  }
+  .gallery-sidebar-item {
+    width: auto !important;
+    min-width: 132px !important;
+    border-left: none !important;
+    border-bottom: 2px solid transparent !important;
+    padding: 8px 10px !important;
+  }
+  .gallery-content {
+    padding: 18px 14px 24px !important;
+    overflow-x: hidden !important;
+  }
+  .gallery-frame {
+    min-width: 0 !important;
+  }
+  .gallery-chart-area {
+    height: clamp(340px, 62dvh, var(--gallery-chart-height));
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-width: 559px) {
+  .gallery-chart-area > * {
+    min-width: 640px;
   }
 }

@@ -168,11 +168,14 @@ export function CrossfilterScatter() {
   // State versions are only committed on 'end' to update the count chip.
   const brushTRef = useRef<[number, number] | null>(null)
   const brushVRef = useRef<[number, number] | null>(null)
+  const [brushExtents, setBrushExtents] = useState<{
+    time: [number, number] | null
+    volume: [number, number] | null
+  }>({ time: null, volume: null })
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(
     () => new Set(SCATTER_SECTORS)
   )
   const selectedSectorsRef = useRef<Set<string>>(new Set(SCATTER_SECTORS))
-  const [filteredCount, setFilteredCount] = useState(TOTAL_POINTS)
   const [barTooltip, setBarTooltip] = useState<BarTooltipState | null>(null)
   const rAFRef = useRef<number | null>(null)
 
@@ -240,18 +243,16 @@ export function CrossfilterScatter() {
 
   // isActive for initial render and sector toggle (React-driven, infrequent)
   const isActive = useMemo(
-    () => computeIsActive(brushTRef.current, brushVRef.current, selectedSectors, p2InnerH),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [computeIsActive, selectedSectors, p2InnerH],
+    () => computeIsActive(brushExtents.time, brushExtents.volume, selectedSectors, p2InnerH),
+    [computeIsActive, brushExtents, selectedSectors, p2InnerH],
   )
 
-  // Update filteredCount when isActive changes (sector toggle / resize)
-  useEffect(() => {
+  const activeCount = useMemo(() => {
     let count = 0
     for (let i = 0; i < isActive.length; i++) {
       if (isActive[i]) count++
     }
-    setFilteredCount(count)
+    return count
   }, [isActive])
 
   // ─── ResizeObserver ───────────────────────────────────────────────────────
@@ -372,15 +373,13 @@ export function CrossfilterScatter() {
         const c1 = canvas1Ref.current; const c2 = canvas2Ref.current
         if (c1) { const ctx = c1.getContext('2d'); if (ctx) drawScatterCanvas(ctx, data, active, d => d.t, d => d.price, xScaleT, yScalePrice1, p1InnerW, p1InnerH) }
         if (c2) { const ctx = c2.getContext('2d'); if (ctx) drawScatterCanvas(ctx, data, active, d => d.volume, d => d.price, xScaleV, yScalePrice2, p2InnerW, p2InnerH) }
-        let count = 0; for (let i = 0; i < active.length; i++) if (active[i]) count++
-        setFilteredCount(count)
+        setBrushExtents(prev => ({ ...prev, time: brushTRef.current }))
       })
 
     d3.select<SVGGElement, unknown>(g).call(brush)
     d3.select(g).select('.selection')
       .attr('fill', 'var(--accent)').attr('fill-opacity', 0.12)
       .attr('stroke', 'var(--accent)').attr('stroke-width', 1)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p1InnerW, p1InnerH, computeIsActive, data, xScaleT, yScalePrice1, xScaleV, yScalePrice2, p2InnerW, p2InnerH])
 
   // ─── brushY on panel 2 ───────────────────────────────────────────────────
@@ -409,15 +408,13 @@ export function CrossfilterScatter() {
         const c1 = canvas1Ref.current; const c2 = canvas2Ref.current
         if (c1) { const ctx = c1.getContext('2d'); if (ctx) drawScatterCanvas(ctx, data, active, d => d.t, d => d.price, xScaleT, yScalePrice1, p1InnerW, p1InnerH) }
         if (c2) { const ctx = c2.getContext('2d'); if (ctx) drawScatterCanvas(ctx, data, active, d => d.volume, d => d.price, xScaleV, yScalePrice2, p2InnerW, p2InnerH) }
-        let count = 0; for (let i = 0; i < active.length; i++) if (active[i]) count++
-        setFilteredCount(count)
+        setBrushExtents(prev => ({ ...prev, volume: brushVRef.current }))
       })
 
     d3.select<SVGGElement, unknown>(g).call(brush)
     d3.select(g).select('.selection')
       .attr('fill', 'var(--accent)').attr('fill-opacity', 0.12)
       .attr('stroke', 'var(--accent)').attr('stroke-width', 1)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p2InnerW, p2InnerH, computeIsActive, data, xScaleT, yScalePrice1, xScaleV, yScalePrice2, p1InnerW, p1InnerH])
 
   // ─── Sector bar chart (panel 3) ───────────────────────────────────────────
@@ -552,8 +549,8 @@ export function CrossfilterScatter() {
 
   // ─── Active filter annotation ─────────────────────────────────────────────
   // Shown in panel 1 when any filter is active
-  const hasFilter = brushTRef.current !== null || brushVRef.current !== null || selectedSectors.size < SCATTER_SECTORS.length
-  const filterLabel = `${filteredCount.toLocaleString()} / ${TOTAL_POINTS.toLocaleString()} pts`
+  const hasFilter = brushExtents.time !== null || brushExtents.volume !== null || selectedSectors.size < SCATTER_SECTORS.length
+  const filterLabel = `${activeCount.toLocaleString()} / ${TOTAL_POINTS.toLocaleString()} pts`
 
   // ─── Toggle all sectors helper ────────────────────────────────────────────
   const allSelected = selectedSectors.size === SCATTER_SECTORS.length
@@ -564,7 +561,7 @@ export function CrossfilterScatter() {
       intro="Brush the time or volume panel to filter all views simultaneously. Click a sector bar to toggle it. Active filters are annotated."
       description="20,000 trade events across 3 coordinated views. Brush the time or volume panel to filter all three simultaneously. Canvas 2D for performance — no setState in the filter hot path."
       totalPoints={TOTAL_POINTS}
-      renderedPoints={filteredCount}
+      renderedPoints={activeCount}
       height={520}
     >
       <div

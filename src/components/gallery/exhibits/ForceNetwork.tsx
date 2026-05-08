@@ -389,16 +389,6 @@ export function ForceNetwork() {
       })
   }, [selectedNodeId, filteredEdges])
 
-  // Compute tooltip pixel position in the SVG coordinate space
-  // The nodeGroup transform gives us the x/y from the tick; we store it in
-  // a simpler way by reading the node's current x/y from stableNodesRef.
-  const tooltipNode = useMemo(() => {
-    if (!tooltip) return null
-    const n = stableNodesRef.current.find(n => n.id === tooltip.node.id)
-    if (!n) return null
-    return n
-  }, [tooltip])
-
   return (
     <GalleryFrame
       title="Force-Directed Network"
@@ -489,15 +479,14 @@ export function ForceNetwork() {
           </button>
         </div>
 
-        {/* Node tooltip — absolutely positioned over the container.
-            We read the node's simulation x/y from stableNodesRef and offset by
-            the SVG's bounding rect relative to the container. */}
-        {tooltip && tooltipNode && (
+        {/* Node tooltip — absolutely positioned over the container using the
+            mutable D3 simulation node stored in tooltip state. */}
+        {tooltip && (
           <div
             style={{
               position: 'absolute',
-              left: (tooltipNode.x ?? 0) + MARGIN.left + 14,
-              top: (tooltipNode.y ?? 0) + MARGIN.top - 20,
+              left: (tooltip.node.x ?? 0) + MARGIN.left + 14,
+              top: (tooltip.node.y ?? 0) + MARGIN.top - 20,
               background: 'var(--surface)',
               border: '1px solid var(--border)',
               borderRadius: 3,

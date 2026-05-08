@@ -612,6 +612,8 @@ export function PortfolioChart({
         background: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         height: `${height}px`,
+        flexShrink: 0,
+        minWidth: 0,
       }}
     >
       {/* Tab + period row — sits inside the MARGIN.top space (44px) */}

@@ -37,7 +37,7 @@ export function GalleryFrame({
   }
 
   return (
-    <div style={{ width: '100%' }}>
+    <div className="gallery-frame" style={{ width: '100%' }}>
       {/* Header bar */}
       <div
         style={{
@@ -85,12 +85,12 @@ export function GalleryFrame({
 
       {/* Chart area */}
       <div
+        className="gallery-chart-area"
         style={{
-          height,
+          '--gallery-chart-height': `${height}px`,
           position: 'relative',
-          overflow: 'hidden',
           marginTop: intro ? 8 : 0,
-        }}
+        } as CSSProperties}
       >
         {children}
       </div>
