@@ -1,0 +1,68 @@
+/* ── Headings ── */
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.heading {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: 0.02em;
+}
+
+/* ── Body copy ── */
+.body {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+/* ── Labels (uppercase, tracked) ── */
+.label {
+  font-size: 10px;
+  color: var(--text-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.labelSm {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Secondary / caption ── */
+.caption {
+  font-size: 10px;
+  color: var(--text-2);
+}
+
+/* ── Monospace values ── */
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+}
+
+.monoSm {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-2);
+  letter-spacing: -0.02em;
+}
+
+/* ── Intro / mono body ── */
+.intro {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+}

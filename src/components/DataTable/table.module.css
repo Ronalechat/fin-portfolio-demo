@@ -1,0 +1,475 @@
+/* ── Outer layout ── */
+.wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.headerBar {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+.scrollBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ── Header cells ── */
+.th {
+  position: relative;
+  padding: 0 12px;
+  height: 32px;
+  font-size: 10px;
+  font-weight: 400;
+  font-style: italic;
+  color: #444;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.thSortable {
+  font-weight: 500;
+  font-style: normal;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.thSorted {
+  color: var(--accent);
+}
+
+.thLeft {
+  text-align: left;
+}
+
+.thRight {
+  text-align: right;
+}
+
+.thInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.thInnerLeft {
+  justify-content: flex-start;
+}
+
+.thInnerRight {
+  justify-content: flex-end;
+}
+
+/* ── Resize handle ── */
+.resizeHandle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.resizeHandle:hover {
+  background: var(--border);
+}
+
+.resizeHandleActive {
+  background: var(--accent);
+}
+
+/* ── Body cells ── */
+.td {
+  padding: 0 12px;
+  height: 36px;
+  vertical-align: middle;
+}
+
+.tdLeft {
+  text-align: left;
+}
+
+.tdRight {
+  text-align: right;
+}
+
+/* ── Empty state ── */
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+
+/* ── Expand button ── */
+.expandBtn {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  transition: color 0.15s;
+}
+
+/* ── Ticker cell ── */
+.tickerCell {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-1);
+}
+
+/* ── Colour helpers for P&L, side ── */
+.positive {
+  color: var(--positive);
+}
+
+.negative {
+  color: var(--negative);
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+/* ── SubTable / PositionSummary ── */
+.subTableWrap {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.summaryBar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgba(239, 68, 68, 0.3);
+  max-width: 80px;
+}
+
+.summaryBarFill {
+  height: 100%;
+  background: rgba(34, 197, 94, 0.5);
+  border-radius: 2px;
+}
+
+.summaryVolume {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-2);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+/* ── SubTable header cells ── */
+.subTh {
+  padding: 5px 12px;
+  font-size: 10px;
+  font-weight: 400;
+  font-style: italic;
+  color: #444;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: default;
+  user-select: none;
+}
+
+.subThSortable {
+  font-weight: 500;
+  font-style: normal;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.subThSorted {
+  color: var(--accent);
+}
+
+/* ── Trade side cell ── */
+.sideCell {
+  padding: 5px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: border-color 0.15s;
+  border-left: 2px solid transparent;
+}
+
+.sideCellSelected {
+  border-left-color: var(--accent);
+}
+
+/* ── Sparkline ── */
+.sparklineSvg {
+  display: block;
+  overflow: visible;
+}
+
+/* ── Detail panel ── */
+.detailPanel {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+  padding: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.detailBody {
+  padding: 12px 12px 0;
+  flex: 1;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.detailLabel {
+  font-size: 10px;
+  color: var(--text-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.detailValue {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  text-align: right;
+}
+
+.detailDivider {
+  border-top: 1px solid var(--border);
+  margin: 10px 0;
+}
+
+.detailSection {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.execGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.execCell {
+  background: var(--bg);
+  padding: 8px 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.sideBadge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 3px;
+  padding: 2px 7px;
+}
+
+.sideBadgeBuy {
+  color: var(--positive);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.sideBadgeSell {
+  color: var(--negative);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ── Mobile list ── */
+.mobileList {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mobileFilterBar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.mobileFilterIcon {
+  position: absolute;
+  left: 24px;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.mobileFilterInput {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-1);
+  font-family: ui-sans-serif, system-ui;
+  font-size: 12px;
+  padding: 7px 10px 7px 30px;
+  outline: none;
+  letter-spacing: 0.02em;
+}
+
+.mobileFilterInput:focus {
+  border-color: var(--accent);
+}
+
+.mobileScroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobileRow {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  min-height: 56px;
+  gap: 12px;
+}
+
+.mobileRow:active {
+  background: var(--surface);
+}
+
+.mobileTicker {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text-1);
+  width: 56px;
+  flex-shrink: 0;
+}
+
+.mobileStats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mobilePnl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.mobileSubtext {
+  font-size: 10px;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+}
+
+.mobileTrend {
+  flex-shrink: 0;
+}
+
+/* ── Mobile bottom-sheet overlay ── */
+.mobileOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mobileSheet {
+  background: var(--surface);
+  border-radius: 12px 12px 0 0;
+  max-height: 65vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileSheetHandle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 8px auto 4px;
+  flex-shrink: 0;
+}

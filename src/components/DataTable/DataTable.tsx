@@ -19,12 +19,15 @@ import {
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { CaretDown, CaretUp } from '@phosphor-icons/react'
+import type { ColumnDef } from '@tanstack/react-table'
 import type { Position, Trade } from '../../data/types'
 import { portfolioData } from '../../data/generateData'
 import { SubTable } from './SubTable'
-import { COLUMNS } from './columns'
+import styles from './table.module.css'
 
 interface Props {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnDef<Position, any>[]
   filteredIds: Set<number> | null
   globalFilter: string
   selectedTradeId: string | null
@@ -33,14 +36,19 @@ interface Props {
   onExpandedTradesChange: (trades: Trade[] | null) => void
 }
 
-function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSelect, onTickerHover, onExpandedTradesChange }: Props) {
+const DataTableInner = ({
+  columns,
+  filteredIds,
+  globalFilter,
+  selectedTradeId,
+  onTradeSelect,
+  onTickerHover,
+  onExpandedTradesChange,
+}: Props) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [sorting, setSorting] = useState<SortingState>([])
   const [expanded, setExpanded] = useState<ExpandedState>({})
   const [columnFilters] = useState<ColumnFiltersState>([])
-
-  // The scroll container uses flex:1 so the browser controls its height.
-  // No ResizeObserver needed — the virtualizer reads the element height directly.
 
   const handleExpandedChange = useCallback(
     (updater: ExpandedState | ((prev: ExpandedState) => ExpandedState)) => {
@@ -56,9 +64,6 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
     [],
   )
 
-  // 2D — tell the chart which trades to show as tick marks when a row is expanded.
-  // Row IDs are String(position.id), so we can resolve back to portfolioData directly
-  // without needing to access `table` here (which isn't defined yet at this point).
   useLayoutEffect(() => {
     const expandedKeys = Object.keys(expanded).filter(
       (k) => expanded[k as keyof typeof expanded],
@@ -80,7 +85,7 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
 
   const table = useReactTable({
     data: filteredData,
-    columns: COLUMNS,
+    columns,
     state: { sorting, expanded, columnFilters },
     onSortingChange: setSorting,
     onExpandedChange: handleExpandedChange as (
@@ -97,8 +102,6 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
 
   const rows = table.getRowModel().rows
 
-  // Memoised so TanStack Virtual doesn't re-estimate all 5,000 rows when the
-  // DataTable re-renders due to unrelated parent state changes (e.g. sort toggle).
   const estimateSize = useCallback(
     (i: number) => {
       const row = rows[i]
@@ -133,9 +136,9 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
   const headers = table.getFlatHeaders()
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0 }}>
+    <div className={styles.wrapper}>
       {/* Sticky header */}
-      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', flexShrink: 0 }}>
+      <div className={styles.headerBar}>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <colgroup>
             {headers.map((h) => <col key={h.id} style={{ width: h.getSize() }} />)}
@@ -146,40 +149,21 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
                 const canSort = header.column.getCanSort()
                 const sorted = header.column.getIsSorted()
                 const isLeft = header.id === 'expander' || header.id === 'ticker'
-                const color = sorted
-                  ? 'var(--accent)'
-                  : canSort
-                  ? 'var(--text-2)'
-                  : '#444'
                 return (
                   <th
                     key={header.id}
                     title={canSort ? 'Click to sort' : undefined}
-                    style={{
-                      position: 'relative',
-                      padding: '0 12px',
-                      height: 32,
-                      fontSize: 10,
-                      fontWeight: canSort ? 500 : 400,
-                      fontStyle: canSort ? 'normal' : 'italic',
-                      color,
-                      textAlign: isLeft ? 'left' : 'right',
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      cursor: canSort ? 'pointer' : 'default',
-                      userSelect: 'none',
-                      whiteSpace: 'nowrap',
-                    }}
+                    className={[
+                      styles.th,
+                      canSort ? styles.thSortable : '',
+                      sorted ? styles.thSorted : '',
+                      isLeft ? styles.thLeft : styles.thRight,
+                    ].join(' ')}
                     onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                   >
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 3,
-                      justifyContent: isLeft ? 'flex-start' : 'flex-end',
-                    }}>
+                    <span className={`${styles.thInner} ${isLeft ? styles.thInnerLeft : styles.thInnerRight}`}>
                       {flexRender(header.column.columnDef.header, header.getContext())}
-                      {canSort && sorted === 'asc' && <CaretUp size={9} weight="bold" />}
+                      {canSort && sorted === 'asc'  && <CaretUp size={9} weight="bold" />}
                       {canSort && sorted === 'desc' && <CaretDown size={9} weight="bold" />}
                       {canSort && !sorted && (
                         <span style={{ opacity: 0.35, fontSize: 8, lineHeight: 1 }}>⇅</span>
@@ -189,21 +173,15 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
                       <div
                         onMouseDown={header.getResizeHandler()}
                         onTouchStart={header.getResizeHandler()}
-                        style={{
-                          position: 'absolute',
-                          right: 0,
-                          top: 0,
-                          height: '100%',
-                          width: 4,
-                          cursor: 'col-resize',
-                          userSelect: 'none',
-                          touchAction: 'none',
-                          background: header.column.getIsResizing()
-                            ? 'var(--accent)'
-                            : 'transparent',
+                        className={`${styles.resizeHandle} ${header.column.getIsResizing() ? styles.resizeHandleActive : ''}`}
+                        onMouseEnter={(e) => {
+                          if (!header.column.getIsResizing())
+                            (e.currentTarget as HTMLDivElement).style.background = 'var(--border)'
                         }}
-                        onMouseEnter={(e) => { if (!header.column.getIsResizing()) (e.currentTarget as HTMLDivElement).style.background = 'var(--border)' }}
-                        onMouseLeave={(e) => { if (!header.column.getIsResizing()) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
+                        onMouseLeave={(e) => {
+                          if (!header.column.getIsResizing())
+                            (e.currentTarget as HTMLDivElement).style.background = ''
+                        }}
                       />
                     )}
                   </th>
@@ -214,26 +192,18 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
         </table>
       </div>
 
-      {/* Empty state — brush active but no trades fall in the selected window */}
+      {/* Empty state */}
       {filteredIds !== null && filteredIds.size === 0 && (
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-2)',
-          fontSize: 11,
-          fontStyle: 'italic',
-          letterSpacing: '0.03em',
-        }}>
+        <div className={styles.emptyState}>
           No trades in selected period — drag the chart to adjust
         </div>
       )}
 
-      {/* Virtualised body — flex:1 fills remaining height; ResizeObserver reads the result */}
+      {/* Virtualised body */}
       <div
         ref={containerRef}
-        style={{ flex: filteredIds !== null && filteredIds.size === 0 ? 0 : 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}
+        className={styles.scrollBody}
+        style={{ flex: filteredIds !== null && filteredIds.size === 0 ? 0 : 1 }}
       >
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <colgroup>
@@ -241,7 +211,7 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
           </colgroup>
           <tbody>
             {paddingTop > 0 && (
-              <tr><td style={{ height: paddingTop, padding: 0 }} colSpan={COLUMNS.length} /></tr>
+              <tr><td style={{ height: paddingTop, padding: 0 }} colSpan={columns.length} /></tr>
             )}
             {virtualItems.map((vRow) => {
               const row = rows[vRow.index]
@@ -249,7 +219,6 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
 
               const id = row.original.id
               const isInFilter = filteredIds === null || filteredIds.has(id)
-              const opacity = isInFilter ? 1 : 0.25
               const isExpanded = row.getIsExpanded()
 
               return (
@@ -257,11 +226,10 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
                   key={row.id}
                   data-index={vRow.index}
                   ref={rowVirtualizer.measureElement}
-                  style={{ opacity, transition: 'opacity 0.2s', cursor: 'pointer' }}
+                  style={{ opacity: isInFilter ? 1 : 0.25, transition: 'opacity 0.2s', cursor: 'pointer' }}
                   onClick={() => row.toggleExpanded()}
                 >
-                  <td colSpan={COLUMNS.length} style={{ padding: 0 }}>
-                    {/* Main position row — CSS handles hover; className drives expanded state */}
+                  <td colSpan={columns.length} style={{ padding: 0 }}>
                     <table style={{
                       width: '100%',
                       borderCollapse: 'collapse',
@@ -283,12 +251,7 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
                             return (
                               <td
                                 key={cell.id}
-                                style={{
-                                  padding: '0 12px',
-                                  height: 36,
-                                  textAlign: isLeft ? 'left' : 'right',
-                                  verticalAlign: 'middle',
-                                }}
+                                className={`${styles.td} ${isLeft ? styles.tdLeft : styles.tdRight}`}
                               >
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                               </td>
@@ -298,7 +261,6 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
                       </tbody>
                     </table>
 
-                    {/* Expanded sub-table */}
                     {isExpanded && (
                       <SubTable
                         trades={row.original.trades}
@@ -312,7 +274,7 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
               )
             })}
             {paddingBottom > 0 && (
-              <tr><td style={{ height: paddingBottom, padding: 0 }} colSpan={COLUMNS.length} /></tr>
+              <tr><td style={{ height: paddingBottom, padding: 0 }} colSpan={columns.length} /></tr>
             )}
           </tbody>
         </table>
@@ -321,8 +283,4 @@ function DataTableInner({ filteredIds, globalFilter, selectedTradeId, onTradeSel
   )
 }
 
-// memo: DataTable only re-renders when its own props change.
-// Without this, every hoveredTicker update in ChartTableView (60x/sec during
-// row scrolling) caused DataTable to re-render → useReactTable (5k rows) +
-// useVirtualizer to run → 5-10ms per hover event → visible freeze.
 export const DataTable = memo(DataTableInner)

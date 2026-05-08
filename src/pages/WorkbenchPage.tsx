@@ -1,50 +1,37 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ChartTableView } from '../components/ChartTableView'
+import { MobilePositionList } from '../components/DataTable/MobilePositionList'
+import { PortfolioChart, type SelectedTrade } from '../components/PortfolioChart/PortfolioChart'
+import { portfolioData } from '../data/generateData'
+import { Box } from '../components/ui/Box'
+import styles from './workbench.module.css'
 
-function LoadingScreen({ onDone }: { onDone: () => void }) {
+const LoadingScreen = ({ onDone }: { onDone: () => void }) => {
   useEffect(() => {
     const t = setTimeout(onDone, 1400)
     return () => clearTimeout(t)
   }, [onDone])
 
   return (
-    <div style={{
-      position: 'absolute',
-      inset: 0,
-      background: 'var(--bg)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 20,
-      zIndex: 100,
-    }}>
-      {/* Animated bar chart icon */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 28 }}>
+    <Box position="absolute" inset={0} background="var(--bg)"
+      display="flex" flexDirection="column" alignItems="center" justifyContent="center"
+      gap={20} zIndex={100}
+    >
+      <Box display="flex" alignItems="flex-end" gap={3} height={28}>
         {[0.45, 0.75, 1, 0.6, 0.85].map((h, i) => (
           <div
             key={i}
+            className={styles.bar}
             style={{
-              width: 4,
               height: `${h * 28}px`,
-              background: 'var(--accent)',
               opacity: 0.4 + h * 0.6,
-              borderRadius: 1,
               animation: `workbench-pulse 1.1s ease-in-out ${i * 0.12}s infinite alternate`,
             }}
           />
         ))}
-      </div>
+      </Box>
 
-      <div style={{
-        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-        fontSize: 10,
-        letterSpacing: '0.2em',
-        textTransform: 'uppercase',
-        color: 'var(--text-2)',
-      }}>
-        Loading portfolio data…
-      </div>
+      <span className={styles.loadingText}>Loading portfolio data…</span>
 
       <style>{`
         @keyframes workbench-pulse {
@@ -52,75 +39,65 @@ function LoadingScreen({ onDone }: { onDone: () => void }) {
           to   { transform: scaleY(1);   opacity: 1; }
         }
       `}</style>
-    </div>
+    </Box>
   )
 }
 
-export function WorkbenchPage() {
+export const WorkbenchPage = () => {
   const [ready, setReady] = useState(false)
+
+  // Mobile chart↔table state
+  const [mobileSelected, setMobileSelected] = useState<SelectedTrade | null>(null)
+  const [mobileDateRange, setMobileDateRange] = useState<[Date, Date] | null>(null)
+  const [mobilePeriodDays, setMobilePeriodDays] = useState(90)
+
+  const mobileFilteredIds = useMemo<Set<number> | null>(() => {
+    if (!mobileDateRange) return null
+    const [start, end] = mobileDateRange
+    const startStr = start.toISOString().slice(0, 10)
+    const endStr   = end.toISOString().slice(0, 10)
+    const ids = new Set<number>()
+    for (const pos of portfolioData) {
+      for (const trade of pos.trades) {
+        if (trade.date >= startStr && trade.date <= endStr) {
+          ids.add(pos.id)
+          break
+        }
+      }
+    }
+    return ids
+  }, [mobileDateRange])
 
   return (
     <>
-      {/* Mobile notice — shown only where the workbench cannot remain usable. */}
-      <div
-        className="workbench-mobile-only"
-        style={{
-          flex: 1,
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '48px 24px',
-          textAlign: 'center',
-          gap: 16,
-        }}
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="14" rx="2" stroke="var(--accent)" strokeWidth="1.5" />
-          <line x1="8" y1="21" x2="16" y2="21" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="12" y1="18" x2="12" y2="21" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
-          Best viewed on desktop
-        </div>
-        <div style={{
-          fontSize: 11, color: 'var(--text-2)', lineHeight: 1.6, maxWidth: 280,
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-        }}>
-          The Workbench combines a D3 chart and a virtualised table across a wide layout.
-          Open on a laptop for the full experience.
-        </div>
-      </div>
+      <Box className="mobile-only" flex={1} flexDirection="column" minHeight={0}>
+        <Box height={220} flexShrink={0}>
+          <PortfolioChart
+            onBrush={setMobileDateRange}
+            hasBrush={mobileDateRange !== null}
+            selectedTrade={mobileSelected}
+            periodDays={mobilePeriodDays}
+            onPeriodChange={setMobilePeriodDays}
+            highlightedTicker={null}
+            expandedPositionTrades={null}
+          />
+        </Box>
+        <MobilePositionList
+          selectedTrade={mobileSelected}
+          onTradeSelect={setMobileSelected}
+          filteredIds={mobileFilteredIds}
+        />
+      </Box>
 
-      {/* Desktop layout */}
-      <div
-        className="workbench-desktop"
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: 0,
-          position: 'relative',
-          overflowX: 'auto',
-          overflowY: 'hidden',
-        }}
-      >
+      <Box className="hide-mobile" flex={1} display="flex" flexDirection="column" minHeight={0} position="relative">
         {!ready && <LoadingScreen onDone={() => setReady(true)} />}
-        {/* Mount eagerly so data is ready when loading screen fades */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minWidth: 960,
-            width: '100%',
-            minHeight: 0,
-            opacity: ready ? 1 : 0,
-            transition: 'opacity 0.4s ease',
-          }}
+        <Box
+          flex={1} display="flex" flexDirection="column" minHeight={0}
+          opacity={ready ? 1 : 0} transition="opacity 0.4s ease"
         >
           <ChartTableView />
-        </div>
-      </div>
+        </Box>
+      </Box>
     </>
   )
 }
